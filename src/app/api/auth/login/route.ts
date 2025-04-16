@@ -20,5 +20,5 @@ export async function POST(request: NextRequest) {
   cookieStore.set('access-token', data.session!.access_token);
   cookieStore.set('refresh-token', data.session!.refresh_token);
 
-  return NextResponse.json({ status: 200 });
+  return NextResponse.json(data, { status: 200 });
 }

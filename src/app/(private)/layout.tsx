@@ -28,18 +28,20 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           'Content-Type': 'application/json',
           },
       });
+      
+      const userData = await userResponse.json();
 
-      if (!userResponse.ok && !triedRefresh) {
+      if (new String(userData.error).includes('expired') && !triedRefresh) {
         await refreshToken();
         triedRefresh = true;
-        getUser();
+        return getUser();
       } 
 
       if (!userResponse.ok) {
         router.push('/auth/login')
       }
 
-      return await userResponse.json();
+      return userData;
     };
     
     getUser();

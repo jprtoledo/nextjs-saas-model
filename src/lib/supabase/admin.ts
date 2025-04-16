@@ -13,6 +13,9 @@ export async function createAdminClient() {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
+      },
+      auth: {
+        autoRefreshToken: false,
       }
     }
   );
