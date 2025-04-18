@@ -10,20 +10,24 @@ import { Input } from '@/components/input'
 import { Strong, Text, TextLink, ErrorText } from '@/components/text'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [loginForm, setLoginForm] = useState({
+    email: '',
+    password: ''
+  })
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(loginForm),
       });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (data.error) throw data.error;
       router.push('/dashboard');
     } catch (error) {
       setError('Credenciais inválidas');
@@ -37,11 +41,11 @@ export default function LoginPage() {
         <Heading>Entrar na sua conta</Heading>
         <Field>
           <Label>Email</Label>
-          <Input type="email" name="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input type="email" name="email" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} />
         </Field>
         <Field>
           <Label>Senha</Label>
-          <Input type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Input type="password" name="password" autoComplete="new-password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} />
         </Field>
         <div className="flex flex-row-reverse justify-between">
           <Text>

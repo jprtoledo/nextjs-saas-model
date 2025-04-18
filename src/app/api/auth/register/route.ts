@@ -1,24 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
-
+import prisma from '@/lib/prisma';
+import bcrypt from 'bcrypt';
+import { encrypt } from '@/lib/auth/session';
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
-  const supabase = await createAdminClient();
 
   const { email, password } = await request.json();
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email,
+    },
   });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+  if (existingUser) {
+    return NextResponse.json({ error: 'Usuário já existe' }, { status: 400 });
   }
 
-  cookieStore.set('access-token', data.session!.access_token);
-  cookieStore.set('refresh-token', data.session!.refresh_token);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+    },
+  });
+  
+  const {accessToken, refreshToken} = await encrypt({
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    currentPlan: user.currentPlan,
+  })
 
-  return NextResponse.json(data);
+  cookieStore.set('access-token', accessToken);
+  cookieStore.set('refresh-token', refreshToken);
+
+  return NextResponse.json({ status: 200 });
 }

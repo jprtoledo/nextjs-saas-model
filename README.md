@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js SaaS Model
+
+This is a modern, production-ready SaaS (Software as a Service) template built with Next.js, designed to serve as a foundation for your future SaaS applications. It includes essential features like authentication, database integration, and email functionality.
+
+## Features
+
+- 🚀 Next.js 15 with App Router
+- 🔐 Authentication with JWT
+- 📧 Email functionality with Nodemailer
+- 🗄️ PostgreSQL database with Prisma ORM
+- 🎨 Modern UI with Tailwind CSS
+- ⚡ TypeScript for type safety
+- 🔍 ESLint for code quality
+- 📱 Responsive design
+- 🔄 State management
+- 🔒 Secure password hashing with bcrypt
+
+## Prerequisites
+
+- Node.js 18.17 or later
+- npm or yarn
+- PostgreSQL database (or Supabase)
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd nextjs-saas-model
+```
 
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Set up environment variables:
+Create a `.env` file in the root directory with the following variables:
+```env
+DATABASE_URL="your-database-url"
+DIRECT_URL="your-direct-database-url"
+ACCESS_SECRET="your-access-token-secret"
+REFRESH_SECRET="your-refresh-token-secret"
+EMAIL_USER="your-email"
+EMAIL_PASSWORD="your-email-password"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+4. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection URL (with connection pooling) | Yes |
+| `DIRECT_URL` | Direct PostgreSQL connection URL | Yes |
+| `ACCESS_SECRET` | Secret key for JWT access tokens | Yes |
+| `REFRESH_SECRET` | Secret key for JWT refresh tokens | Yes |
+| `EMAIL_USER` | Email address for sending emails | Yes |
+| `EMAIL_PASSWORD` | Email account password | Yes |
+| `NEXT_PUBLIC_APP_URL` | Public URL of your application | Yes |
 
-## Learn More
+## Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run postinstall` - Generate Prisma client
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+├── src/              # Source code
+│   ├── app/         # Next.js app router
+│   ├── components/  # React components
+│   ├── lib/         # Utility functions
+│   └── types/       # TypeScript types
+├── prisma/          # Database schema and migrations
+├── public/          # Static assets
+└── ...config files
+```
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Feel free to submit issues and enhancement requests.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

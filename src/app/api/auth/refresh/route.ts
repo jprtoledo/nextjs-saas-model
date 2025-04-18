@@ -1,19 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
+import { decryptRefresh, encrypt } from '@/lib/auth/session';
+import prisma from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
-  const supabaseAdmin = await createAdminClient();
 
-  const { data, error } = await supabaseAdmin.auth.refreshSession({ refresh_token: cookieStore.get('refresh-token')!.value });
+  const oldRefreshToken = cookieStore.get('refresh-token')!.value
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+  const payload = await decryptRefresh(oldRefreshToken)
+
+  if (!payload) {
+    return NextResponse.json({ error: 'Invalid refresh token' }, { status: 401 });
   }
 
-  cookieStore.set('access-token', data.session!.access_token);
-  cookieStore.set('refresh-token', data.session!.refresh_token);
+  const user = await prisma.user.findUnique({
+    where: {
+      id: payload.sub,
+    },
+  })
 
-  return NextResponse.json({ data, error });
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
+
+  const { accessToken, refreshToken: newRefreshToken } = await encrypt({
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    currentPlan: user.currentPlan,
+  })
+
+  cookieStore.set('access-token', accessToken)
+  cookieStore.set('refresh-token', newRefreshToken)
+
+  return NextResponse.json({ status: 200 });
 }

@@ -1,24 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcrypt';
+import prisma from '@/lib/prisma';
+import { encrypt } from '@/lib/auth/session';
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
-  const supabaseAdmin = await createAdminClient();
 
-  const { email, password } = await request.json();
+  const { email, password } = await request.json();  
+  const user = await prisma.user.findUnique({
+    where: {
+      email
+    }
+  })
 
-  const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+  if (!user) {
+    return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 401 });
   }
 
-  cookieStore.set('access-token', data.session!.access_token);
-  cookieStore.set('refresh-token', data.session!.refresh_token);
+  const isPasswordValid = await bcrypt.compare(password, user.password);
 
-  return NextResponse.json(data, { status: 200 });
+  if (!isPasswordValid) {
+    return NextResponse.json({ error: 'Senha inválida' }, { status: 401 });
+  }
+
+  const {accessToken, refreshToken} = await encrypt({
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    currentPlan: user.currentPlan,
+  })
+
+  cookieStore.set({
+    name: 'access-token', 
+    value: accessToken,
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7,
+  })
+  
+  cookieStore.set({
+    name: 'refresh-token', 
+    value: refreshToken,
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 30,
+  })
+
+  return NextResponse.json({ status: 200 });
 }
